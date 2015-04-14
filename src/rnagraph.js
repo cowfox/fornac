@@ -198,7 +198,7 @@ function ProteinGraph(struct_name, size, uid) {
         return self;
     };
 
-    self.get_uids = function() {
+    self.getUids = function() {
         /* Get the positions of each node so that they
          * can be passed to elementsToJson later
          */
@@ -279,7 +279,7 @@ function RNAGraph(seq, dotbracket, struct_name) {
         return positions;
     };
 
-    self.get_uids = function() {
+    self.getUids = function() {
         /* Get the positions of each node so that they
          * can be passed to elementsToJson later
          */

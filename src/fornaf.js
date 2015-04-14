@@ -830,7 +830,7 @@ function FornaContainer(element, passedOptions) {
         var nucleotide_positions = r.get_positions('nucleotide');
         var label_positions = r.get_positions('label');
 
-        var uids = r.get_uids();
+        var uids = r.getUids();
 
         r.recalculateElements()
         .elementsToJson()
