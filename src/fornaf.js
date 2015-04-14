@@ -78,7 +78,8 @@ function FornaContainer(element, passedOptions) {
                         'name': 'empty',
                         'positions': [],
                         'labelInterval': 10,
-                        'avoidOthers': true
+                        'avoidOthers': true,
+                        'uids': []
                       };
 
         if (arguments.length == 2) {
@@ -128,6 +129,7 @@ function FornaContainer(element, passedOptions) {
         // when it is modified, it is replaced in the global list of RNAs
         //
         var max_x, min_x;
+        console.log('avoidOthers:', avoidOthers);
 
         if (avoidOthers) {
             if (self.graph.nodes.length > 0)
@@ -154,19 +156,46 @@ function FornaContainer(element, passedOptions) {
         self.center_view();
     };
 
-    self.transitionRNA = function(previousRNAJson, newStructure, options) {
+    self.transitionRNA = function(previousRNAJson, newStructure) {
         //transition from an RNA which is already displayed to a new structure
+        var options = {"uids": previousRNAJson.getUids()};
         var newRNAJson = self.createInitialLayout(newStructure, options);
         console.log('newRNAJson:', newRNAJson);
 
-        vis_nodes.selectAll('g.gnode').each(function(d) { console.log('d before', d); });
-        var gnodes = vis_nodes.selectAll('g.gnode').data(newRNAJson);
+        /*
+        var uids = previousRNAJson.getUids();
+        console.log('uids', uids);
+        newRNAJson.addUids(uids);
+        */
+
+        function debug_node(d) {
+            console.log('d', d, d3.select(this).attr('transform')); 
+        }
+
+        vis_nodes.selectAll('g.gnode').each(debug_node);
+
+        console.log(vis_nodes.selectAll('g.gnode').attr('transform'))
+        var gnodes = vis_nodes.selectAll('g.gnode').data(newRNAJson.nodes);
 
         gnodes.each(function(d) { console.log('d after', d); });
 
+        var duration = 2000;
+
         gnodes.transition().attr('transform', function(d) { 
-            console.log('d after', d);
-            return 'translate(' + [d.x, d.y] + ')'}).duration(1000);
+            return 'translate(' + [d.x, d.y] + ')'}).duration(duration)
+            .each('end', debug_node);
+
+            console.log('previousRNAJson.links', previousRNAJson.links);
+            console.log('newRNAJson.links', newRNAJson.links);
+
+        links = vis_links.selectAll("line.link").data(newRNAJson.links);
+
+        links.transition()
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; })
+        .duration(duration)
 
     };
 

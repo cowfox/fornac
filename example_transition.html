@@ -19,8 +19,13 @@ var container = new FornaContainer("#rna_ss", {'applyForce': false, 'allowPannin
 rna1 = container.addRNA('...............');
 container.transitionRNA(rna1, '(.............)')
 */
+r = new RNAGraph('', '...', '');
+console.log(simple_xy_coordinates(r.pairtable).map( function(e) { return e[0] + " " + e[1]; } ))
+r = new RNAGraph('', '(.)', '');
+console.log(simple_xy_coordinates(r.pairtable).map( function(e) { return e[0] + " " + e[1]; } ))
 
-rna1 = container.addRNA('...');
+
+rna1 = container.addRNA('...', {"avoidOthers": false});
 container.transitionRNA(rna1, '(.)');
 
 //rna2 = container.addRNA('(.)');
