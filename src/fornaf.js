@@ -1172,6 +1172,77 @@ function FornaContainer(element, passedOptions) {
 
     }
 
+    self.createNewNodes = function(gnodes_enter) {
+        gnodes_enter = gnodes_enter.append('g')
+        .classed('noselect', true)
+        .classed('gnode', true)
+        .attr('struct_name', function(d) { return d.struct_name; })
+        .attr("transform", function(d) { 
+            if (typeof d.x != 'undefined' && typeof d.y != 'undefined')
+                return 'translate(' + [d.x, d.y] + ')'; 
+            else
+                return ''
+        })
+        .each( function(d) { d.selected = d.previouslySelected = false; })
+
+        gnodes_enter
+        .call(drag)
+        .on('mousedown', node_mousedown)
+        .on('mousedrag', function(d) {})
+        .on('mouseup', node_mouseup)
+        .on('click', node_mouseclick)
+        .transition()
+        .duration(750)
+        .ease("elastic")
+        .attr("r", 6.5);
+
+        // create nodes behind the circles which will serve to highlight them
+        var nucleotide_nodes = gnodes_enter.filter(function(d) { 
+            return d.node_type == 'nucleotide' || d.node_type == 'label' || d.node_type == 'protein';
+        })
+
+        nucleotide_nodes.append("svg:circle")
+        .attr('class', "outline_node")
+        .attr("r", function(d) { return d.radius+1; })
+
+        var node = gnodes_enter.append("svg:circle")
+        .attr("class", "node")
+        .classed("label", function(d) { return d.node_type == 'label'; })
+        .attr("r", function(d) { 
+            if (d.node_type == 'middle') return 0; 
+            else {
+                return d.radius; 
+            }
+        })
+        .attr("node_type", function(d) { return d.node_type; })
+
+        var labels = gnodes_enter.append("text")
+        .text(function(d) { return d.name; })
+        .attr('text-anchor', 'middle')
+        .attr('font-size', 8.0)
+        .attr('font-weight', 'bold')
+        .attr('y', 2.5)
+        .attr('class', 'node-label')
+        .attr("label_type", function(d) { return d.node_type; })
+        .append("svg:title")
+        .text(function(d) { 
+            if (d.node_type == 'nucleotide') {
+                return d.struct_name + ":" + d.num;
+            } else {
+                return '';
+            }
+        });
+
+        node.append("svg:title")
+        .text(function(d) { 
+            if (d.node_type == 'nucleotide') {
+                return d.struct_name + ":" + d.num;
+            } else {
+                return '';
+            }
+        });
+    }
+
     node_tooltip = function(d) {
         node_tooltips = {};
 
@@ -1214,75 +1285,8 @@ function FornaContainer(element, passedOptions) {
             //.attr('pointer-events', 'all');
 
             gnodes_enter = gnodes.enter()
-            .append('g')
-            .classed('noselect', true)
-            .classed('gnode', true)
-             .attr('struct_name', function(d) { return d.struct_name; })
-              .attr("transform", function(d) { 
-                  if (typeof d.x != 'undefined' && typeof d.y != 'undefined')
-                    return 'translate(' + [d.x, d.y] + ')'; 
-                else
-                    return ''
-                })
-             .each( function(d) { d.selected = d.previouslySelected = false; })
 
-            gnodes_enter
-            .call(drag)
-            .on('mousedown', node_mousedown)
-            .on('mousedrag', function(d) {})
-            .on('mouseup', node_mouseup)
-            .on('click', node_mouseclick)
-            .transition()
-            .duration(750)
-            .ease("elastic")
-            .attr("r", 6.5);
-
-            var circle_update = gnodes.select('circle');
-
-            // create nodes behind the circles which will serve to highlight them
-            var nucleotide_nodes = gnodes_enter.filter(function(d) { 
-                return d.node_type == 'nucleotide' || d.node_type == 'label' || d.node_type == 'protein';
-            })
-            nucleotide_nodes.append("svg:circle")
-            .attr('class', "outline_node")
-            .attr("r", function(d) { return d.radius+1; })
-
-            var node = gnodes_enter.append("svg:circle")
-            .attr("class", "node")
-            .classed("label", function(d) { return d.node_type == 'label'; })
-            .attr("r", function(d) { 
-                if (d.node_type == 'middle') return 0; 
-                else {
-                    return d.radius; 
-                }
-                })
-            .attr("node_type", function(d) { return d.node_type; })
-            
-            var labels = gnodes_enter.append("text")
-            .text(function(d) { return d.name; })
-            .attr('text-anchor', 'middle')
-            .attr('font-size', 8.0)
-            .attr('font-weight', 'bold')
-            .attr('y', 2.5)
-            .attr('class', 'node-label')
-            .attr("label_type", function(d) { return d.node_type; })
-            .append("svg:title")
-            .text(function(d) { 
-                if (d.node_type == 'nucleotide') {
-                    return d.struct_name + ":" + d.num;
-                } else {
-                    return '';
-                }
-            });
-
-            node.append("svg:title")
-            .text(function(d) { 
-                if (d.node_type == 'nucleotide') {
-                    return d.struct_name + ":" + d.num;
-                } else {
-                    return '';
-                }
-            });
+            self.createNewNodes(gnodes_enter);
 
             gnodes.exit().remove();
 
