@@ -99,11 +99,13 @@ function FornaContainer(element, passedOptions) {
         }
 
         rnaJson = rnaJson.elementsToJson()
+        .addUids(options.uids)
         .addPositions("nucleotide", options.positions)
-        .addLabels(options.labelInterval)
+        .addLabels(1, options.labelInterval)
         .reinforceStems()
         .reinforceLoops()
         .connectFakeNodes()
+        .reassignLinkUids()
 
         return rnaJson;
     }
@@ -129,7 +131,6 @@ function FornaContainer(element, passedOptions) {
         // when it is modified, it is replaced in the global list of RNAs
         //
         var max_x, min_x;
-        console.log('avoidOthers:', avoidOthers);
 
         if (avoidOthers) {
             if (self.graph.nodes.length > 0)
@@ -160,11 +161,9 @@ function FornaContainer(element, passedOptions) {
         //transition from an RNA which is already displayed to a new structure
         var options = {"uids": previousRNAJson.getUids()};
         var newRNAJson = self.createInitialLayout(newStructure, options);
-        console.log('newRNAJson:', newRNAJson);
 
         /*
         var uids = previousRNAJson.getUids();
-        console.log('uids', uids);
         newRNAJson.addUids(uids);
         */
 
@@ -175,7 +174,7 @@ function FornaContainer(element, passedOptions) {
         vis_nodes.selectAll('g.gnode').each(debug_node);
 
         console.log(vis_nodes.selectAll('g.gnode').attr('transform'))
-        var gnodes = vis_nodes.selectAll('g.gnode').data(newRNAJson.nodes);
+        var gnodes = vis_nodes.selectAll('g.gnode').data(newRNAJson.nodes, node_key);
 
         gnodes.each(function(d) { console.log('d after', d); });
 
@@ -188,7 +187,7 @@ function FornaContainer(element, passedOptions) {
             console.log('previousRNAJson.links', previousRNAJson.links);
             console.log('newRNAJson.links', newRNAJson.links);
 
-        links = vis_links.selectAll("line.link").data(newRNAJson.links);
+        links = vis_links.selectAll("line.link").data(newRNAJson.links, link_key);
 
         links.transition()
         .attr("x1", function(d) { return d.source.x; })
@@ -196,6 +195,18 @@ function FornaContainer(element, passedOptions) {
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; })
         .duration(duration)
+
+
+        var links_enter = links.enter();
+        link_lines = links_enter.append("svg:line");
+
+        link_lines.attr("class", "link")
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; })
+        .attr("link_type", function(d) { return d.link_type; } )
+        .attr('pointer-events', function(d) { if (d.link_type == 'fake') return 'none'; else return 'all';});
 
     };
 
@@ -866,7 +877,7 @@ function FornaContainer(element, passedOptions) {
         .addPseudoknots()
         .addPositions('nucleotide', nucleotide_positions)
         .addUids(uids)
-        .addLabels(self.options.labelInterval)
+        .addLabels(1, self.options.labelInterval)
         .addPositions('label', label_positions)
         .reinforceStems()
         .reinforceLoops()
@@ -1127,19 +1138,7 @@ function FornaContainer(element, passedOptions) {
         d3.event.preventDefault();
     }
 
-    self.update = function () {
-        self.force.nodes(self.graph.nodes)
-        .links(self.graph.links);
-        
-        if (self.animation) {
-          self.force.start();
-        }
-
-        var all_links = vis_links.selectAll("line.link")
-        .data(self.graph.links, link_key);
-
-        var links_enter = all_links.enter();
-
+    self.createNewLinks = function(links_enter) {
         link_lines = links_enter.append("svg:line");
 
         link_lines.append("svg:title")
@@ -1153,26 +1152,49 @@ function FornaContainer(element, passedOptions) {
         .attr("link_type", function(d) { return d.link_type; } )
         .attr('pointer-events', function(d) { if (d.link_type == 'fake') return 'none'; else return 'all';});
 
-            all_links.exit().remove();
+        /* We don't need to update the positions of the stabilizing links */
+        basepair_links = vis_links.selectAll("[link_type=basepair]");
+        basepair_links.classed("basepair", true);
 
-            /* We don't need to update the positions of the stabilizing links */
-            basepair_links = vis_links.selectAll("[link_type=basepair]");
-            basepair_links.classed("basepair", true);
-            
-            fake_links = vis_links.selectAll("[link_type=fake]")
-            fake_links.classed("fake", true);
+        fake_links = vis_links.selectAll("[link_type=fake]")
+        fake_links.classed("fake", true);
 
-            intermolecule_links = vis_links.selectAll("[link_type=intermolecule]");
-            intermolecule_links.classed("intermolecule", true);
+        intermolecule_links = vis_links.selectAll("[link_type=intermolecule]");
+        intermolecule_links.classed("intermolecule", true);
 
-            plink = vis_links.selectAll("[link_type=protein_chain],[link_type=chain_chain]");
-            plink.classed("chain_chain", true);
+        plink = vis_links.selectAll("[link_type=protein_chain],[link_type=chain_chain]");
+        plink.classed("chain_chain", true);
 
+    }
 
-            if (self.displayFakeLinks)
-                xlink = all_links;
-            else
-                xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain],[link_type=label_link],[link_type=backbone],[link_type=basepair],[link_type=fake],[link_type=intermolecule]");
+    node_tooltip = function(d) {
+        node_tooltips = {};
+
+        node_tooltips.nucleotide = d.num;
+        node_tooltips.label = '';
+        node_tooltips.pseudo = '';
+        node_tooltips.middle = '';
+        node_tooltips.protein = d.struct_name;
+
+        return node_tooltips[d.node_type];
+    };
+
+    self.update = function () {
+        self.force.nodes(self.graph.nodes)
+        .links(self.graph.links);
+        
+        if (self.animation) {
+          self.force.start();
+        }
+
+        var all_links = vis_links.selectAll("line.link")
+        .data(self.graph.links, link_key);
+
+        var links_enter = all_links.enter();
+        self.createNewLinks(links_enter);
+
+        all_links.exit().remove();
+
 
             domain = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
             var colors = d3.scale.category10().domain(domain);
@@ -1205,20 +1227,6 @@ function FornaContainer(element, passedOptions) {
             .ease("elastic")
             .attr("r", 6.5);
 
-            node_tooltip = function(d) {
-                node_tooltips = {};
-
-                node_tooltips.nucleotide = d.num;
-                node_tooltips.label = '';
-                node_tooltips.pseudo = '';
-                node_tooltips.middle = '';
-                node_tooltips.protein = d.struct_name;
-
-                return node_tooltips[d.node_type];
-            };
-
-
-            xlink.on('click', link_click);
 
             var circle_update = gnodes.select('circle');
 
@@ -1272,6 +1280,13 @@ function FornaContainer(element, passedOptions) {
             //fake_nodes = self.graph.nodes.filter(function(d) { return d.node_type == 'middle'; });
             //fake_nodes = self.graph.nodes.filter(function(d) { return true; });
             real_nodes = self.graph.nodes.filter(function(d) { return d.node_type == 'nucleotide' || d.node_type == 'label';});
+
+            if (self.displayFakeLinks)
+                xlink = all_links;
+            else
+                xlink = vis_links.selectAll("[link_type=real],[link_type=pseudoknot],[link_type=protein_chain],[link_type=chain_chain],[link_type=label_link],[link_type=backbone],[link_type=basepair],[link_type=fake],[link_type=intermolecule]");
+
+            xlink.on('click', link_click);
 
             self.force.on("tick", function() {
                 /*

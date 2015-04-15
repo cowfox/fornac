@@ -647,8 +647,13 @@ function RNAGraph(seq, dotbracket, struct_name) {
         return elements.concat(self.pt_to_elements(pt, level, i, j));
     };
 
-    self.addLabels = function(labelInterval) {
-        if (arguments.length  === 0)
+    self.addLabels = function(startNumber, labelInterval) {
+        if (arguments.length  === 0) {
+            startNumber = 1;
+            labelInterval = 10;
+        }
+
+        if (arguments.length === 1)
             labelInterval = 10;
 
         if (labelInterval === 0)
@@ -770,6 +775,18 @@ function RNAGraph(seq, dotbracket, struct_name) {
 
         return self;
     };
+
+    self.reassignLinkUids = function() {
+        // reassign uids to the links, corresponding to the uids of the two nodes
+        // they connect
+        var i;
+
+        for (i = 0; i < self.links.length; i++) {
+            self.links[i].uid = self.links[i].source.uid + self.links[i].target.uid;
+        }
+
+        return self;
+    }
 
     self.removePseudoknots = function() {
         if (self.pairtable.length > 1)

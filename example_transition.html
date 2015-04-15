@@ -13,7 +13,7 @@ This after the RNA container.
     <script type='text/javascript' src='src/fornaf.js'></script>                                                            
 
     <script type='text/javascript'>                                                                                         
-var container = new FornaContainer("#rna_ss", {'applyForce': false, 'allowPanningAndZooming': true}); 
+var container = new FornaContainer("#rna_ss", {'applyForce': true, 'allowPanningAndZooming': true}); 
 
 /*
 rna1 = container.addRNA('...............');
@@ -24,9 +24,12 @@ console.log(simple_xy_coordinates(r.pairtable).map( function(e) { return e[0] + 
 r = new RNAGraph('', '(.)', '');
 console.log(simple_xy_coordinates(r.pairtable).map( function(e) { return e[0] + " " + e[1]; } ))
 
-
+/*
 rna1 = container.addRNA('...', {"avoidOthers": false});
 container.transitionRNA(rna1, '(.)');
+*/
+
+rna1 = container.addRNA('(((((.)))..(((..((...)))))...))', {"avoidOthers": false});
 
 //rna2 = container.addRNA('(.)');
 
