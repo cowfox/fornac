@@ -1120,6 +1120,7 @@ function FornaContainer(element, passedOptions) {
         svg.selectAll("[link_type=protein_chain]").classed("transparent", !self.displayParameters.displayProteinLinks);
         // Fake Links
         vis_links.selectAll("[link_type=fake]").classed("transparent", !self.options.displayAllLinks);
+        vis_links.selectAll("[link_type=fake_fake]").classed("transparent", !self.options.displayAllLinks);
     };
 
     function nudge(dx, dy) {
@@ -1144,15 +1145,18 @@ function FornaContainer(element, passedOptions) {
         link_lines.append("svg:title")
         .text(link_key);
 
-        link_lines.attr("class", "link")
+        link_lines
+        .classed("link", true)
         .attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; })
         .attr("link_type", function(d) { return d.link_type; } )
+        .attr("class", function(d) { return d3.select(this).attr('class') + " " + d.link_type; })
         .attr('pointer-events', function(d) { if (d.link_type == 'fake') return 'none'; else return 'all';});
 
         /* We don't need to update the positions of the stabilizing links */
+        /*
         basepair_links = vis_links.selectAll("[link_type=basepair]");
         basepair_links.classed("basepair", true);
 
@@ -1164,6 +1168,7 @@ function FornaContainer(element, passedOptions) {
 
         plink = vis_links.selectAll("[link_type=protein_chain],[link_type=chain_chain]");
         plink.classed("chain_chain", true);
+        */
 
     }
 
@@ -1189,6 +1194,11 @@ function FornaContainer(element, passedOptions) {
 
         var all_links = vis_links.selectAll("line.link")
         .data(self.graph.links, link_key);
+
+        all_links.attr('class', '')
+        .classed('link', true)
+        .attr("link_type", function(d) { return d.link_type; } )
+        .attr("class", function(d) { return d3.select(this).attr('class') + " " + d.link_type; })
 
         var links_enter = all_links.enter();
         self.createNewLinks(links_enter);
@@ -1226,7 +1236,6 @@ function FornaContainer(element, passedOptions) {
             .duration(750)
             .ease("elastic")
             .attr("r", 6.5);
-
 
             var circle_update = gnodes.select('circle');
 

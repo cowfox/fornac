@@ -653,7 +653,7 @@ function RNAGraph(seq, dotbracket, struct_name) {
             labelInterval = 10;
         }
 
-        if (arguments.length === 1)
+        if (arguments.length === 1) 
             labelInterval = 10;
 
         if (labelInterval === 0)
@@ -715,7 +715,7 @@ function RNAGraph(seq, dotbracket, struct_name) {
                 newX = self.nodes[i-1].x + offsetVec[0];
                 newY = self.nodes[i-1].y + offsetVec[1];
 
-                new_node = {'name': i,
+                new_node = {'name': i + startNumber - 1,
                                  'num': -1,
                                  'radius': 6,
                                  'rna': self,

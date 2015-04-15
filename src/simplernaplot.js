@@ -76,6 +76,7 @@ simple_xy_coordinates = function(pair_table)
           loop(k, l, pair_table);
       }
   }
+
   polygon = Math.PI*(count-2)/count; /* bending angle in loop polygon */
   remember[++r] = j;
   begin = i_old < 0 ? 0 : i_old;
@@ -107,7 +108,6 @@ simple_xy_coordinates = function(pair_table)
       poss.push([x[i], y[i]]);
       alpha += Math.PI-angle[i+1];
   }
-
 
   return poss;
 }
