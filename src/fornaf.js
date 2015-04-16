@@ -178,7 +178,7 @@ function FornaContainer(element, passedOptions) {
 
         gnodes.each(function(d) { console.log('d after', d); });
 
-        var duration = 2000;
+        var duration = 500;
 
         gnodes.transition().attr('transform', function(d) { 
             return 'translate(' + [d.x, d.y] + ')'}).duration(duration)
@@ -188,6 +188,35 @@ function FornaContainer(element, passedOptions) {
             console.log('newRNAJson.links', newRNAJson.links);
 
         links = vis_links.selectAll("line.link").data(newRNAJson.links, link_key);
+        var newNodes = self.createNewNodes(gnodes.enter())
+        .attr("transform", function(d) { 
+            if (typeof d.x != 'undefined' && typeof d.y != 'undefined')
+                return 'translate(' + [0, 0] + ')'; 
+            else
+                return ''
+        })
+        
+        self.graph.nodes = gnodes.data();
+        self.updateStyle();
+        //self.changeColorScheme(self.colorScheme);
+        self.center_view();
+
+
+        function endall(transition, callback) { 
+            if (transition.size() === 0) { callback() }
+            var n = 0; 
+            transition 
+            .each(function() { ++n; }) 
+            .each("end", function() { if (!--n) callback.apply(this, arguments); }); 
+        } 
+
+        function addNewLinks() {
+            var newLinks = self.createNewLinks(links.enter())
+            self.graph.links = gnodes.data();
+
+            self.updateStyle();
+
+        }
 
         links.transition()
         .attr("x1", function(d) { return d.source.x; })
@@ -195,18 +224,15 @@ function FornaContainer(element, passedOptions) {
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; })
         .duration(duration)
+        .call(endall, addNewLinks)
 
-
-        var links_enter = links.enter();
-        link_lines = links_enter.append("svg:line");
-
-        link_lines.attr("class", "link")
-        .attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; })
-        .attr("link_type", function(d) { return d.link_type; } )
-        .attr('pointer-events', function(d) { if (d.link_type == 'fake') return 'none'; else return 'all';});
+        newNodes.transition()
+        .attr("transform", function(d) { 
+            if (typeof d.x != 'undefined' && typeof d.y != 'undefined')
+                return 'translate(' + [d.x, d.y] + ')'; 
+            else
+                return ''
+        })
 
     };
 
@@ -1140,7 +1166,7 @@ function FornaContainer(element, passedOptions) {
     }
 
     self.createNewLinks = function(links_enter) {
-        link_lines = links_enter.append("svg:line");
+        var link_lines = links_enter.append("svg:line");
 
         link_lines.append("svg:title")
         .text(link_key);
@@ -1170,6 +1196,7 @@ function FornaContainer(element, passedOptions) {
         plink.classed("chain_chain", true);
         */
 
+       return link_lines;
     }
 
     self.createNewNodes = function(gnodes_enter) {
@@ -1241,6 +1268,8 @@ function FornaContainer(element, passedOptions) {
                 return '';
             }
         });
+
+        return gnodes_enter;
     }
 
     node_tooltip = function(d) {
