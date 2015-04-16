@@ -25,7 +25,7 @@ r = new RNAGraph('', '(.)', '');
 console.log(simple_xy_coordinates(r.pairtable).map( function(e) { return e[0] + " " + e[1]; } ))
 
 rna1 = container.addRNA('...', {"avoidOthers": false});
-container.transitionRNA(rna1, '(.).');
+container.transitionRNA('(.).', function() { console.log('newFunction called'); container.transitionRNA('(.)..') } );
 //container.transitionRNA(rna1, '(.)');
 
 //rna1 = container.addRNA('(((((.)))..(((..((...)))))...))', {"avoidOthers": false});

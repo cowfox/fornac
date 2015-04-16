@@ -157,10 +157,18 @@ function FornaContainer(element, passedOptions) {
         self.center_view();
     };
 
-    self.transitionRNA = function(previousRNAJson, newStructure) {
+    self.transitionRNA = function(newStructure, nextFunction) {
         //transition from an RNA which is already displayed to a new structure
-        var options = {"uids": previousRNAJson.getUids()};
+        var uids = self.graph.nodes
+        .filter(function(d) { return d.node_type == 'nucleotide'; })
+        .map(function(d) { return d.uid; });
+
+        var options = {"uids": uids};
+
+        console.log('newStructure', newStructure);
         var newRNAJson = self.createInitialLayout(newStructure, options);
+        console.log('uids', uids)
+        console.log('newUids', newRNAJson.getUids())
 
         /*
         var uids = previousRNAJson.getUids();
@@ -171,8 +179,6 @@ function FornaContainer(element, passedOptions) {
             console.log('d', d, d3.select(this).attr('transform')); 
         }
 
-        vis_nodes.selectAll('g.gnode').each(debug_node);
-
         console.log(vis_nodes.selectAll('g.gnode').attr('transform'))
         var gnodes = vis_nodes.selectAll('g.gnode').data(newRNAJson.nodes, node_key);
 
@@ -182,12 +188,9 @@ function FornaContainer(element, passedOptions) {
 
         gnodes.transition().attr('transform', function(d) { 
             return 'translate(' + [d.x, d.y] + ')'}).duration(duration)
-            .each('end', debug_node);
-
-            console.log('previousRNAJson.links', previousRNAJson.links);
-            console.log('newRNAJson.links', newRNAJson.links);
 
         links = vis_links.selectAll("line.link").data(newRNAJson.links, link_key);
+        console.log('gnodes.enter()', gnodes.enter());
         var newNodes = self.createNewNodes(gnodes.enter())
         .attr("transform", function(d) { 
             if (typeof d.x != 'undefined' && typeof d.y != 'undefined')
@@ -215,6 +218,9 @@ function FornaContainer(element, passedOptions) {
             self.graph.links = gnodes.data();
 
             self.updateStyle();
+
+            if (typeof nextFunction != 'undefined')
+                nextFunction();
 
         }
 
