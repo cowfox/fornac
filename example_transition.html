@@ -15,22 +15,14 @@ This after the RNA container.
     <script type='text/javascript'>                                                                                         
 var container = new FornaContainer("#rna_ss", {'applyForce': false, 'allowPanningAndZooming': true}); 
 
-/*
-rna1 = container.addRNA('...............');
-container.transitionRNA(rna1, '(.............)')
-*/
-r = new RNAGraph('', '...', '');
-console.log(simple_xy_coordinates(r.pairtable).map( function(e) { return e[0] + " " + e[1]; } ))
-r = new RNAGraph('', '(.)', '');
-console.log(simple_xy_coordinates(r.pairtable).map( function(e) { return e[0] + " " + e[1]; } ))
-
-rna1 = container.addRNA('...', {"avoidOthers": false});
 
 //var structs = ['(.).', '(.)..', '(.)...', '(.)....', '(.).....', '(.).(..)'] //, '(.)...']
-var structs = ['(.).', '(.)']
+var structs = ['(.).', '(.)..', '(.)...', '(.)....'].reverse();
+//var structs = ['(.).', '(.)']
+
 var funcs = []
 
-for (i = 0; i < structs.reverse().length; i++) {
+for (i = 0; i < structs.length; i++) {
     if (funcs.length === 0) 
         (function(val) { funcs.push(function() { console.log('here', val, structs[val]); container.transitionRNA(structs[val]) })} )(i);
     else

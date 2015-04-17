@@ -170,7 +170,6 @@ function FornaContainer(element, passedOptions) {
             console.log('d', d, d3.select(this).attr('transform')); 
         }
 
-        console.log(vis_nodes.selectAll('g.gnode').attr('transform'))
         var gnodes = vis_nodes.selectAll('g.gnode').data(newRNAJson.nodes, node_key);
 
         //gnodes.each(function(d) { console.log('d after', d); });
@@ -202,7 +201,8 @@ function FornaContainer(element, passedOptions) {
         self.center_view(duration);
 
         function endall(transition, callback) { 
-            if (transition.size() === 0) { callback() }
+            console.log('transition:', transition, 'size', transition.size());
+            if (transition.size() === 0) { setTimeout(callback, duration); }
             var n = 0; 
             transition 
             .each(function() { ++n; }) 
@@ -211,8 +211,6 @@ function FornaContainer(element, passedOptions) {
 
         function addNewLinks() {
             var newLinks = self.createNewLinks(links.enter())
-            links.exit().remove();
-
             self.graph.links = gnodes.data();
 
             self.updateStyle();
@@ -222,6 +220,8 @@ function FornaContainer(element, passedOptions) {
 
         }
 
+        links.exit().remove();
+
         links.transition()
         .attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
@@ -229,14 +229,6 @@ function FornaContainer(element, passedOptions) {
         .attr("y2", function(d) { return d.target.y; })
         .duration(duration)
         .call(endall, addNewLinks)
-
-        links.exit().transition()
-        .attr("x1", function(d) { return 0; })
-        .attr("y1", function(d) { return 0; })
-        .attr("x2", function(d) { return 0; })
-        .attr("y2", function(d) { return 0; })
-        .duration(duration)
-
 
         newNodes.transition()
         .attr("transform", function(d) { 
