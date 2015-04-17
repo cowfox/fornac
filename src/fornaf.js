@@ -164,16 +164,7 @@ function FornaContainer(element, passedOptions) {
         .map(function(d) { return d.uid; });
 
         var options = {"uids": uids};
-
-        console.log('newStructure', newStructure);
         var newRNAJson = self.createInitialLayout(newStructure, options);
-        console.log('uids', uids)
-        console.log('newUids', newRNAJson.getUids())
-
-        /*
-        var uids = previousRNAJson.getUids();
-        newRNAJson.addUids(uids);
-        */
 
         function debug_node(d) {
             console.log('d', d, d3.select(this).attr('transform')); 
@@ -182,7 +173,7 @@ function FornaContainer(element, passedOptions) {
         console.log(vis_nodes.selectAll('g.gnode').attr('transform'))
         var gnodes = vis_nodes.selectAll('g.gnode').data(newRNAJson.nodes, node_key);
 
-        gnodes.each(function(d) { console.log('d after', d); });
+        //gnodes.each(function(d) { console.log('d after', d); });
 
         var duration = 500;
 
@@ -190,7 +181,6 @@ function FornaContainer(element, passedOptions) {
             return 'translate(' + [d.x, d.y] + ')'}).duration(duration)
 
         links = vis_links.selectAll("line.link").data(newRNAJson.links, link_key);
-        console.log('gnodes.enter()', gnodes.enter());
         var newNodes = self.createNewNodes(gnodes.enter())
         .attr("transform", function(d) { 
             if (typeof d.x != 'undefined' && typeof d.y != 'undefined')
@@ -198,12 +188,18 @@ function FornaContainer(element, passedOptions) {
             else
                 return ''
         })
-        
+
+        gnodes.exit().transition()
+        .attr("transform", function(d) { 
+            if (typeof d.x != 'undefined' && typeof d.y != 'undefined')
+                return 'translate(' + [0, 0] + ')'; 
+            else
+                return ''
+        })
+
         self.graph.nodes = gnodes.data();
         self.updateStyle();
-        //self.changeColorScheme(self.colorScheme);
-        self.center_view();
-
+        self.center_view(duration);
 
         function endall(transition, callback) { 
             if (transition.size() === 0) { callback() }
@@ -215,6 +211,8 @@ function FornaContainer(element, passedOptions) {
 
         function addNewLinks() {
             var newLinks = self.createNewLinks(links.enter())
+            links.exit().remove();
+
             self.graph.links = gnodes.data();
 
             self.updateStyle();
@@ -231,6 +229,14 @@ function FornaContainer(element, passedOptions) {
         .attr("y2", function(d) { return d.target.y; })
         .duration(duration)
         .call(endall, addNewLinks)
+
+        links.exit().transition()
+        .attr("x1", function(d) { return 0; })
+        .attr("y1", function(d) { return 0; })
+        .attr("x2", function(d) { return 0; })
+        .attr("y2", function(d) { return 0; })
+        .duration(duration)
+
 
         newNodes.transition()
         .attr("transform", function(d) { 
@@ -648,13 +654,13 @@ function FornaContainer(element, passedOptions) {
                  "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
     }
 
-    self.center_view = function() {
+    self.getBoundingBoxTransform = function() {
         // Center the view on the molecule(s) and scale it so that everything
         // fits in the window
 
         //no molecules, nothing to do
         if (self.graph.nodes.length === 0)
-            return;
+            return {'translate': [0,0], 'scale': 1};
 
         // Get the bounding box
         min_x = d3.min(self.graph.nodes.map(function(d) {return d.x;}));
@@ -685,15 +691,27 @@ function FornaContainer(element, passedOptions) {
         y_trans = -(min_y) * min_ratio + (self.options.svgH - new_mol_height) / 2;
 
 
+
+        return {'translate': [x_trans, y_trans], 'scale': min_ratio}
+    }
+
+    self.center_view = function(duration) {
+        if (arguments.length == 0)
+            duration = 0
+
+        var bbTransform = self.getBoundingBoxTransform();
+
+        if (bbTransform == null)
+            return;
+
         // do the actual moving
-        vis.attr("transform",
-                 "translate(" + [x_trans, y_trans] + ")" + " scale(" + min_ratio + ")");
+        vis.transition().attr("transform",
+                 "translate(" + bbTransform.translate + ")" + " scale(" + bbTransform.scale + ")").duration(duration);
 
         // tell the zoomer what we did so that next we zoom, it uses the
         // transformation we entered here
-        zoomer.translate([x_trans, y_trans ]);
-        zoomer.scale(min_ratio);
-
+        zoomer.translate(bbTransform.translate);
+        zoomer.scale(bbTransform.scale);
     };
 
     self.force = d3.layout.force()

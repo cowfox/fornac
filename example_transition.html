@@ -25,7 +25,23 @@ r = new RNAGraph('', '(.)', '');
 console.log(simple_xy_coordinates(r.pairtable).map( function(e) { return e[0] + " " + e[1]; } ))
 
 rna1 = container.addRNA('...', {"avoidOthers": false});
-container.transitionRNA('(.).', function() { console.log('newFunction called'); container.transitionRNA('(.)..') } );
+
+//var structs = ['(.).', '(.)..', '(.)...', '(.)....', '(.).....', '(.).(..)'] //, '(.)...']
+var structs = ['(.).', '(.)']
+var funcs = []
+
+for (i = 0; i < structs.reverse().length; i++) {
+    if (funcs.length === 0) 
+        (function(val) { funcs.push(function() { console.log('here', val, structs[val]); container.transitionRNA(structs[val]) })} )(i);
+    else
+        (function(val, prevFunc) { funcs.push(function() { console.log('here', val, structs[val]); container.transitionRNA(structs[val], prevFunc) })} )(i, funcs[funcs.length-1] );
+}
+
+console.log('funcs', funcs);
+
+funcs[funcs.length-1]();
+
+//container.transitionRNA('(.).', function() { console.log('newFunction called'); container.transitionRNA('(.)..') } );
 //container.transitionRNA(rna1, '(.)');
 
 //rna1 = container.addRNA('(((((.)))..(((..((...)))))...))', {"avoidOthers": false});

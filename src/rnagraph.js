@@ -244,8 +244,10 @@ function RNAGraph(seq, dotbracket, struct_name) {
     self.nucs_to_nodes = {};
 
     self.addUids = function(uids) {
-        for (var i = 0; i < uids.length; i++)
-            self.nodes[i].uid = uids[i];
+        var nucleotide_nodes = self.nodes.filter(function(d) { return d.node_type == 'nucleotide'; });
+
+        for (var i = 0; i < uids.length && i < nucleotide_nodes.length; i++)
+            nucleotide_nodes[i].uid = uids[i];
 
         return self;
     };
