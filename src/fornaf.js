@@ -14,7 +14,8 @@ function FornaContainer(element, passedOptions) {
         "labelInterval": 10,
         "applyForce": true,
         "initialSize": [200,200],
-        "allowPanningAndZooming": true
+        "allowPanningAndZooming": true,
+        "transitionDuration": 500
     };
 
     if (arguments.length > 1) {
@@ -77,7 +78,7 @@ function FornaContainer(element, passedOptions) {
                         'sequence': '',
                         'name': 'empty',
                         'positions': [],
-                        'labelInterval': 10,
+                        'labelInterval': self.options.labelInterval,
                         'avoidOthers': true,
                         'uids': []
                       };
@@ -174,7 +175,7 @@ function FornaContainer(element, passedOptions) {
 
         //gnodes.each(function(d) { console.log('d after', d); });
 
-        var duration = 500;
+        var duration = self.options.transitionDuration;
 
         gnodes.transition().attr('transform', function(d) { 
             return 'translate(' + [d.x, d.y] + ')'}).duration(duration)

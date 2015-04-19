@@ -13,33 +13,44 @@ This after the RNA container.
     <script type='text/javascript' src='src/fornaf.js'></script>                                                            
 
     <script type='text/javascript'>                                                                                         
-var container = new FornaContainer("#rna_ss", {'applyForce': false, 'allowPanningAndZooming': true}); 
+var container = new FornaContainer("#rna_ss", {'applyForce': false, 
+        'allowPanningAndZooming': true,
+        "labelInterval":0,
+        "initialSize": [800,800],
+        "transitionDuration": 1000 }); 
 
 
 //var structs = ['(.).', '(.)..', '(.)...', '(.)....', '(.).....', '(.).(..)'] //, '(.)...']
-var structs = ['(.).', '(.)..', '(.)...', '(.)....'].reverse();
-//var structs = ['(.).', '(.)']
 
-var funcs = []
+function doAnimation(structs) {
+    var funcs = []
 
-for (i = 0; i < structs.length; i++) {
-    if (funcs.length === 0) 
-        (function(val) { funcs.push(function() { console.log('here', val, structs[val]); container.transitionRNA(structs[val]) })} )(i);
-    else
-        (function(val, prevFunc) { funcs.push(function() { console.log('here', val, structs[val]); container.transitionRNA(structs[val], prevFunc) })} )(i, funcs[funcs.length-1] );
+        for (i = 0; i < structs.length; i++) {
+            if (funcs.length === 0) 
+                (function(val) { funcs.push(function() { console.log('here', val, structs[val]); container.transitionRNA(structs[val]) })} )(i);
+            else
+                (function(val, prevFunc) { funcs.push(function() { console.log('here', val, structs[val]); container.transitionRNA(structs[val], prevFunc) })} )(i, funcs[funcs.length-1] );
+        }
+
+    console.log('funcs', funcs);
+
+    funcs[funcs.length-1]();
 }
 
-console.log('funcs', funcs);
+/*
+var structs = ['(.).', '(.)..', '(.)...', '(.)....'].reverse();
+doAnimation(structs);
+*/
 
-funcs[funcs.length-1]();
 
-//container.transitionRNA('(.).', function() { console.log('newFunction called'); container.transitionRNA('(.)..') } );
-//container.transitionRNA(rna1, '(.)');
+d3.csv('pete.out.1', function(data) { 
+        console.log('data', data);
+        structs = data.filter(function(d) { return +d.j === 1; }).map(function(d) { return d.struct; });
+        console.log('structs', structs);
+        //structs = structs.splice(0,10)
+        structs.reverse();
 
-//rna1 = container.addRNA('(((((.)))..(((..((...)))))...))', {"avoidOthers": false});
-
-//rna2 = container.addRNA('(.)');
-
-//newRNA = container.transitionTo('...............')
+            doAnimation(structs);
+        });
 
 </script>
