@@ -167,22 +167,13 @@ function FornaContainer(element, passedOptions) {
         var options = {"uids": uids};
         var newRNAJson = self.createInitialLayout(newStructure, options);
 
-        console.log('newRNAJson', newRNAJson);
-
-        function debug_node(d) {
-            console.log('d', d, d3.select(this).attr('transform')); 
-        }
-
         var gnodes = vis_nodes.selectAll('g.gnode').data(newRNAJson.nodes, node_key);
-
-        //gnodes.each(function(d) { console.log('d after', d); });
-
         var duration = self.options.transitionDuration;
 
         gnodes.transition().attr('transform', function(d) { 
             return 'translate(' + [d.x, d.y] + ')'; }).duration(duration);
 
-        links = vis_links.selectAll("line.link").data(newRNAJson.links, link_key);
+        var links = vis_links.selectAll("line.link").data(newRNAJson.links, link_key);
         var newNodes = self.createNewNodes(gnodes.enter())
         .attr("transform", function(d) { 
             if (typeof d.x != 'undefined' && typeof d.y != 'undefined')
@@ -204,7 +195,6 @@ function FornaContainer(element, passedOptions) {
         self.center_view(duration);
 
         function endall(transition, callback) { 
-            console.log('transition:', transition, 'size', transition.size());
             if (transition.size() === 0) { setTimeout(callback, duration); }
             var n = 0; 
             transition 
@@ -269,11 +259,6 @@ function FornaContainer(element, passedOptions) {
         for (i = 0; i < self.extraLinks.length; i++) {
             // the actual node objects may have changed, so we hae to recreate
             // the extra links based on the uids
-
-            if (!(self.extraLinks[i].target.uid in uids_to_nodes)) {
-                console.log("not there:", self.extraLinks[i]);
-            }
-
             self.extraLinks[i].source = uids_to_nodes[self.extraLinks[i].source.uid];
             self.extraLinks[i].target = uids_to_nodes[self.extraLinks[i].target.uid];
             
@@ -424,7 +409,7 @@ function FornaContainer(element, passedOptions) {
         yScale.range([0, svgH]).domain([0, svgH]);
 
         //re-attach the scales to the zoom behaviour
-        zoomer.x(xScale)
+        self.zoomer.x(xScale)
         .y(yScale);
 
         self.brusher.x(xScale)
@@ -556,7 +541,7 @@ function FornaContainer(element, passedOptions) {
     //adapt size to window changes:
     window.addEventListener("resize", setSize, false);
 
-    zoomer = d3.behavior.zoom()
+    self.zoomer = d3.behavior.zoom()
         .scaleExtent([0.1,10])
         .x(xScale)
         .y(yScale)
@@ -589,7 +574,7 @@ function FornaContainer(element, passedOptions) {
     .on('mouseup', mouseup);
 
     if (self.options.allowPanningAndZooming)
-        svg_graph.call(zoomer);
+        svg_graph.call(self.zoomer);
 
     var rect = svg_graph.append('svg:rect')
     .attr('width', self.options.svgW)
@@ -707,8 +692,8 @@ function FornaContainer(element, passedOptions) {
 
         // tell the zoomer what we did so that next we zoom, it uses the
         // transformation we entered here
-        zoomer.translate(bbTransform.translate);
-        zoomer.scale(bbTransform.scale);
+        self.zoomer.translate(bbTransform.translate);
+        self.zoomer.scale(bbTransform.scale);
     };
 
     self.force = d3.layout.force()
@@ -863,7 +848,7 @@ function FornaContainer(element, passedOptions) {
         }
 
         if (shift_keydown || ctrl_keydown) {
-            svg_graph.call(zoomer)
+            svg_graph.call(self.zoomer)
             .on("mousedown.zoom", null)
             .on("touchstart.zoom", null)
             .on("touchmove.zoom", null)
@@ -891,7 +876,7 @@ function FornaContainer(element, passedOptions) {
         .on("touchend.brush", null);                                                                       
 
         brush.select('.background').style('cursor', 'auto');
-        svg_graph.call(zoomer);
+        svg_graph.call(self.zoomer);
 
         vis.selectAll('g.gnode')
         .call(drag);
@@ -1187,10 +1172,7 @@ function FornaContainer(element, passedOptions) {
     }
 
     self.createNewLinks = function(links_enter) {
-        //console.log('creating new links');
-        //console.log('=================================');
-        var link_lines = links_enter.append("svg:line")
-        .each(function(d) { if (d.link_type == "basepair") console.log('link:', d); });
+        var link_lines = links_enter.append("svg:line");
 
         link_lines.append("svg:title")
         .text(link_key);
