@@ -37,12 +37,12 @@ function doAnimation(structs) {
     funcs[funcs.length-1]();
 }
 
-/*
 var structs = ['(.).', '(.)..', '(.)...', '(.)....'].reverse();
 doAnimation(structs);
-*/
 
+// draw the same RNA twice
 
+/*
 d3.csv('pete.out.1', function(data) { 
         console.log('data', data);
         structs = data.filter(function(d) { return +d.j === 1; }).map(function(d) { return d.struct; });
@@ -52,5 +52,6 @@ d3.csv('pete.out.1', function(data) {
 
             doAnimation(structs);
         });
+*/
 
 </script>
