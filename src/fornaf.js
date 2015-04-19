@@ -181,7 +181,7 @@ function FornaContainer(element, passedOptions) {
             return 'translate(' + [d.x, d.y] + ')'}).duration(duration)
 
         links = vis_links.selectAll("line.link").data(newRNAJson.links, link_key);
-        var newNodes = createNewNodes(gnodes.enter())
+        var newNodes = self.createNewNodes(gnodes.enter())
         .attr("transform", function(d) { 
             if (typeof d.x != 'undefined' && typeof d.y != 'undefined')
                 return 'translate(' + [0, 0] + ')'; 
@@ -211,7 +211,7 @@ function FornaContainer(element, passedOptions) {
         } 
 
         function addNewLinks() {
-            var newLinks = createNewLinks(links.enter())
+            var newLinks = self.createNewLinks(links.enter())
             self.graph.links = gnodes.data();
 
             self.updateStyle();
@@ -1182,7 +1182,7 @@ function FornaContainer(element, passedOptions) {
         d3.event.preventDefault();
     }
 
-    createNewLinks = function(links_enter) {
+    self.createNewLinks = function(links_enter) {
         var link_lines = links_enter.append("svg:line");
 
         link_lines.append("svg:title")
@@ -1216,7 +1216,7 @@ function FornaContainer(element, passedOptions) {
        return link_lines;
     }
 
-    createNewNodes = function(gnodes_enter) {
+    self.createNewNodes = function(gnodes_enter) {
         gnodes_enter = gnodes_enter.append('g')
         .classed('noselect', true)
         .classed('gnode', true)
@@ -1238,6 +1238,7 @@ function FornaContainer(element, passedOptions) {
         .transition()
         .duration(750)
         .ease("elastic")
+        .attr("r", 6.5);
 
         // create nodes behind the circles which will serve to highlight them
         var nucleotide_nodes = gnodes_enter.filter(function(d) { 
@@ -1317,7 +1318,7 @@ function FornaContainer(element, passedOptions) {
         .attr("class", function(d) { return d3.select(this).attr('class') + " " + d.link_type; })
 
         var links_enter = all_links.enter();
-        createNewLinks(links_enter);
+        self.createNewLinks(links_enter);
 
         all_links.exit().remove();
 
@@ -1331,7 +1332,7 @@ function FornaContainer(element, passedOptions) {
 
             gnodes_enter = gnodes.enter()
 
-            createNewNodes(gnodes_enter);
+            self.createNewNodes(gnodes_enter);
 
             gnodes.exit().remove();
 
