@@ -92,7 +92,7 @@ function FornaContainer(element, passedOptions) {
 
         rg = new RNAGraph(options.sequence, structure, options.name);
 
-        rnaJson = rg.recalculateElements()
+        rnaJson = rg.recalculateElements();
 
         if (options.positions.length === 0) {
             // no provided positions means we need to calculate an initial layout
@@ -106,16 +106,16 @@ function FornaContainer(element, passedOptions) {
         .reinforceStems()
         .reinforceLoops()
         .connectFakeNodes()
-        .reassignLinkUids()
+        .reassignLinkUids();
 
         return rnaJson;
-    }
+    };
 
     self.addRNA = function(structure, passedOptions) {
         var rnaJson = self.createInitialLayout(structure, passedOptions);
 
         if (arguments.length === 1)
-            passedOptions = {}
+            passedOptions = {};
 
         if ('avoidOthers' in passedOptions)
             self.addRNAJSON(rnaJson, passedOptions.avoidOthers);
@@ -123,7 +123,7 @@ function FornaContainer(element, passedOptions) {
             self.addRNAJSON(rnaJson, true);
 
         return rnaJson;
-    }
+    };
 
     self.addRNAJSON = function(rnaGraph, avoidOthers) {
         // Add an RNAGraph, which contains nodes and links as part of the
@@ -167,6 +167,8 @@ function FornaContainer(element, passedOptions) {
         var options = {"uids": uids};
         var newRNAJson = self.createInitialLayout(newStructure, options);
 
+        console.log('newRNAJson', newRNAJson);
+
         function debug_node(d) {
             console.log('d', d, d3.select(this).attr('transform')); 
         }
@@ -178,7 +180,7 @@ function FornaContainer(element, passedOptions) {
         var duration = self.options.transitionDuration;
 
         gnodes.transition().attr('transform', function(d) { 
-            return 'translate(' + [d.x, d.y] + ')'}).duration(duration)
+            return 'translate(' + [d.x, d.y] + ')'; }).duration(duration);
 
         links = vis_links.selectAll("line.link").data(newRNAJson.links, link_key);
         var newNodes = self.createNewNodes(gnodes.enter())
@@ -186,16 +188,16 @@ function FornaContainer(element, passedOptions) {
             if (typeof d.x != 'undefined' && typeof d.y != 'undefined')
                 return 'translate(' + [0, 0] + ')'; 
             else
-                return ''
-        })
+                return '';
+        });
 
         gnodes.exit().transition()
         .attr("transform", function(d) { 
             if (typeof d.x != 'undefined' && typeof d.y != 'undefined')
                 return 'translate(' + [0, 0] + ')'; 
             else
-                return ''
-        })
+                return '';
+        });
 
         self.graph.nodes = gnodes.data();
         self.updateStyle();
@@ -211,8 +213,8 @@ function FornaContainer(element, passedOptions) {
         } 
 
         function addNewLinks() {
-            var newLinks = self.createNewLinks(links.enter())
-            self.graph.links = gnodes.data();
+            var newLinks = self.createNewLinks(links.enter());
+            self.graph.links = links.data();
 
             self.updateStyle();
 
@@ -229,15 +231,15 @@ function FornaContainer(element, passedOptions) {
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; })
         .duration(duration)
-        .call(endall, addNewLinks)
+        .call(endall, addNewLinks);
 
         newNodes.transition()
         .attr("transform", function(d) { 
             if (typeof d.x != 'undefined' && typeof d.y != 'undefined')
                 return 'translate(' + [d.x, d.y] + ')'; 
             else
-                return ''
-        })
+                return '';
+        });
 
     };
 
@@ -366,17 +368,19 @@ function FornaContainer(element, passedOptions) {
     };
 
     self.fromJSON = function(json_string) {
+        var rnas, extraLinks;
+
         try{
             var data = JSON.parse(json_string);
-            var rnas = data.rnas;
-            var extraLinks = data.extraLinks;
+            rnas = data.rnas;
+            extraLinks = data.extraLinks;
         } catch(err) {
             throw err;
         }
 
-        for (uid in rnas) {
+        for (var uid in rnas) {
             if (rnas[uid].type == 'rna') {
-                r = new RNAGraph()
+                r = new RNAGraph();
 
                 r.seq = rnas[uid].seq;
                 r.dotbracket = rnas[uid].dotbracket;
@@ -391,7 +395,7 @@ function FornaContainer(element, passedOptions) {
                 r.nucs_to_nodes = rnas[uid].nucs_to_nodes;
                 r.pseudoknot_pairs = rnas[uid].pseudoknot_pairs;
             } else {
-                r = new ProteinGraph()
+                r = new ProteinGraph();
                 r.size = rnas[uid].size;
                 r.nodes = rnas[uid].nodes;
                 r.uid = rnas[uid].uid;
@@ -582,10 +586,10 @@ function FornaContainer(element, passedOptions) {
     var svg_graph = svg.append('svg:g')
     .on('mousemove', mousemove)
     .on('mousedown', mousedown)
-    .on('mouseup', mouseup)
+    .on('mouseup', mouseup);
 
     if (self.options.allowPanningAndZooming)
-        svg_graph.call(zoomer)
+        svg_graph.call(zoomer);
 
     var rect = svg_graph.append('svg:rect')
     .attr('width', self.options.svgW)
@@ -624,21 +628,21 @@ function FornaContainer(element, passedOptions) {
                .on("brushend", function() {
                    d3.event.target.clear();
                    d3.select(this).call(d3.event.target);
-               })
+               });
 
       brush.call(self.brusher)
           .on("mousedown.brush", null)
           .on("touchstart.brush", null)                                                                      
           .on("touchmove.brush", null)                                                                       
           .on("touchend.brush", null);                                                                       
-      brush.select('.background').style('cursor', 'auto')
+      brush.select('.background').style('cursor', 'auto');
 
     function zoomstart() {
         var node = vis_nodes.selectAll('g.gnode').selectAll('.outline_node');
         node.each(function(d) {
                 d.selected = false;
                 d.previouslySelected = false;
-                })
+                });
         node.classed("selected", false);
     }
 
@@ -685,16 +689,16 @@ function FornaContainer(element, passedOptions) {
 
 
 
-        return {'translate': [x_trans, y_trans], 'scale': min_ratio}
-    }
+        return {'translate': [x_trans, y_trans], 'scale': min_ratio};
+    };
 
     self.center_view = function(duration) {
-        if (arguments.length == 0)
-            duration = 0
+        if (arguments.length === 0)
+            duration = 0;
 
         var bbTransform = self.getBoundingBoxTransform();
 
-        if (bbTransform == null)
+        if (bbTransform === null)
             return;
 
         // do the actual moving
@@ -797,7 +801,7 @@ function FornaContainer(element, passedOptions) {
     self.resumeForce = function() {
         if (self.animation)
             self.force.resume();
-    }
+    };
 
     function dragended(d) {
         var toDrag = selectedNodes(d);
@@ -820,7 +824,7 @@ function FornaContainer(element, passedOptions) {
                 l = Math.sqrt(x * x + y * y),
                 r = node.radius + quad.point.radius;
                 if (l < r) {
-                    l = (l - r) / l * .1;
+                    l = (l - r) / l * 0.1;
                     node.x -= x *= l;
                     node.y -= y *= l;
                     quad.point.x += x;
@@ -871,7 +875,7 @@ function FornaContainer(element, passedOptions) {
         }
 
         if (ctrl_keydown) {
-          brush.select('.background').style('cursor', 'crosshair')
+          brush.select('.background').style('cursor', 'crosshair');
           brush.call(self.brusher);
         }
     }
@@ -886,7 +890,7 @@ function FornaContainer(element, passedOptions) {
         .on("touchmove.brush", null)                                                                       
         .on("touchend.brush", null);                                                                       
 
-        brush.select('.background').style('cursor', 'auto')
+        brush.select('.background').style('cursor', 'auto');
         svg_graph.call(zoomer);
 
         vis.selectAll('g.gnode')
@@ -924,7 +928,7 @@ function FornaContainer(element, passedOptions) {
         .addPositions('label', label_positions)
         .reinforceStems()
         .reinforceLoops()
-        .updateLinkUids()
+        .updateLinkUids();
     };
 
     remove_link = function(d) {
@@ -968,7 +972,7 @@ function FornaContainer(element, passedOptions) {
         var invalid_links = {'backbone': true,
                              'fake': true,
                              'fake_fake': true,
-                             'label_link': true}
+                             'label_link': true};
 
         if (d.link_type in invalid_links ) 
             return;
@@ -1005,12 +1009,12 @@ function FornaContainer(element, passedOptions) {
         if (!ctrl_keydown) {
             //if the shift key isn't down, unselect everything
             var node = vis_nodes.selectAll('g.gnode').selectAll('.outline_node');
-            node.classed("selected", function(p) { return p.selected =  self.options.applyForce && (p.previouslySelected = false); })
+            node.classed("selected", function(p) { return p.selected =  self.options.applyForce && (p.previouslySelected = false); });
         }
 
         // always select this node
         d3.select(this).select('circle').classed("selected", d.selected = self.options.applyForce && !d.previouslySelected);
-    }
+    };
 
     node_mouseup = function(d) {
         if (mousedown_node) {
@@ -1169,7 +1173,7 @@ function FornaContainer(element, passedOptions) {
     function nudge(dx, dy) {
         node.filter(function(d) { return d.selected; })
         .attr("cx", function(d) { return d.x += dx; })
-        .attr("cy", function(d) { return d.y += dy; })
+        .attr("cy", function(d) { return d.y += dy; });
 
         link.filter(function(d) { return d.source.selected; })
         .attr("x1", function(d) { return d.source.x; })
@@ -1183,7 +1187,10 @@ function FornaContainer(element, passedOptions) {
     }
 
     self.createNewLinks = function(links_enter) {
-        var link_lines = links_enter.append("svg:line");
+        //console.log('creating new links');
+        //console.log('=================================');
+        var link_lines = links_enter.append("svg:line")
+        .each(function(d) { if (d.link_type == "basepair") console.log('link:', d); });
 
         link_lines.append("svg:title")
         .text(link_key);
@@ -1214,7 +1221,7 @@ function FornaContainer(element, passedOptions) {
         */
 
        return link_lines;
-    }
+    };
 
     self.createNewNodes = function(gnodes_enter) {
         gnodes_enter = gnodes_enter.append('g')
@@ -1225,9 +1232,9 @@ function FornaContainer(element, passedOptions) {
             if (typeof d.x != 'undefined' && typeof d.y != 'undefined')
                 return 'translate(' + [d.x, d.y] + ')'; 
             else
-                return ''
+                return '';
         })
-        .each( function(d) { d.selected = d.previouslySelected = false; })
+        .each( function(d) { d.selected = d.previouslySelected = false; });
 
         gnodes_enter
         .call(drag)
@@ -1243,11 +1250,11 @@ function FornaContainer(element, passedOptions) {
         // create nodes behind the circles which will serve to highlight them
         var nucleotide_nodes = gnodes_enter.filter(function(d) { 
             return d.node_type == 'nucleotide' || d.node_type == 'label' || d.node_type == 'protein';
-        })
+        });
 
         nucleotide_nodes.append("svg:circle")
         .attr('class', "outline_node")
-        .attr("r", function(d) { return d.radius+1; })
+        .attr("r", function(d) { return d.radius+1; });
 
         var node = gnodes_enter.append("svg:circle")
         .attr("class", "node")
@@ -1258,7 +1265,7 @@ function FornaContainer(element, passedOptions) {
                 return d.radius; 
             }
         })
-        .attr("node_type", function(d) { return d.node_type; })
+        .attr("node_type", function(d) { return d.node_type; });
 
         var labels = gnodes_enter.append("text")
         .text(function(d) { return d.name; })
@@ -1287,7 +1294,7 @@ function FornaContainer(element, passedOptions) {
         });
 
         return gnodes_enter;
-    }
+    };
 
     node_tooltip = function(d) {
         node_tooltips = {};
@@ -1315,7 +1322,7 @@ function FornaContainer(element, passedOptions) {
         all_links.attr('class', '')
         .classed('link', true)
         .attr("link_type", function(d) { return d.link_type; } )
-        .attr("class", function(d) { return d3.select(this).attr('class') + " " + d.link_type; })
+        .attr("class", function(d) { return d3.select(this).attr('class') + " " + d.link_type; });
 
         var links_enter = all_links.enter();
         self.createNewLinks(links_enter);
@@ -1330,7 +1337,7 @@ function FornaContainer(element, passedOptions) {
             .data(self.graph.nodes, node_key);
             //.attr('pointer-events', 'all');
 
-            gnodes_enter = gnodes.enter()
+            gnodes_enter = gnodes.enter();
 
             self.createNewNodes(gnodes_enter);
 
