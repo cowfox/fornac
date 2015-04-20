@@ -580,7 +580,7 @@ function FornaContainer(element, passedOptions) {
     .attr('width', self.options.svgW)
     .attr('height', self.options.svgH)
     .attr('fill', 'white')
-    .attr('stroke', 'transparent')
+    .attr('stroke', 'grey')
     .attr('stroke-width', 1)
     //.attr("pointer-events", "all")
     .attr("id", "zrect");

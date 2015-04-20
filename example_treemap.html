@@ -69,7 +69,7 @@ d3.json("flare.json", function(error, root) {
       .attr("id", divName)
       .call(position)
       .style("background", function(d) { return d.children ? color(d.name) : null; })
-      .text(function(d) { return d.children ? null : d.name; })
+      //.text(function(d) { return d.children ? null : d.name; })
       .each(function(d) { 
               d.container = new FornaContainer("#" + divName(d), options);
               if (typeof d.struct != 'undefined') {
