@@ -426,6 +426,7 @@ function FornaContainer(element, passedOptions) {
     }
 
     function change_colors(molecule_colors, d, scale) {
+        console.log('change_colors');
         if (molecule_colors.hasOwnProperty(d.num)) {
             val = parseFloat(molecule_colors[d.num]);
 
@@ -441,6 +442,11 @@ function FornaContainer(element, passedOptions) {
         } else {
             return 'white';
         }
+    }
+
+    self.setOutlineColor = function(color) {
+        var nodes = vis_nodes.selectAll('g.gnode').select('[node_type=nucleotide]');
+        nodes.style('fill', color);
     }
 
     self.changeColorScheme = function(newColorScheme) {
@@ -563,6 +569,7 @@ function FornaContainer(element, passedOptions) {
     // set css for svg
     var style = svg.append('svg:style');
     $.get("../css/fornac.css", function(content){
+        console.log('content', content);
         style.text(content.replace(/[\s\n]/g, ""));
     });
     

@@ -165,9 +165,14 @@ function drawCotranscriptionalLine() {
         .enter().append("g")
         .attr("class", "concProfile");
 
-      var root = {"name": "graph",
-          "children": nestedData.map(function(d) { return {"name": d.key, "struct": 
-                    d.values[0].struct, "size": d.values[0].conc};})};
+        function createInitialRoot(nestedData) {
+          var root = {"name": "graph",
+              "children": nestedData.map(function(d) { return {"name": d.key, "struct": 
+                        d.values[0].struct, "size": 1 / nestedData.length};})};
+          return root;
+
+        }
+        var root = createInitialRoot(nestedData);
 
       var containers = {};
 
@@ -183,6 +188,7 @@ function drawCotranscriptionalLine() {
                   if (typeof d.struct != 'undefined') {
                   containers[divName(d)] = new FornaContainer("#" + divName(d), options);
                   containers[divName(d)].transitionRNA(d.struct);
+                  containers[divName(d)].setOutlineColor(color(d.name));
                   }
                   } );
 
@@ -198,8 +204,41 @@ function drawCotranscriptionalLine() {
             .attr("width", lineChartWidth)
             .attr("height", lineChartHeight)
             .on("mouseover", function() { })
-            .on("mouseout", function() { })
             .on("mousemove", mousemove);
+
+            wholeDiv
+                .on("mouseout", function() { 
+                        var xy = d3.mouse(this);
+
+                        /*
+                        if (xy[0] < 0 || xy[1] < margin.top || 
+                                xy[0] > treemapWidth + lineChartWidth ||
+                                xy[1] > treemapHeight + margin.top) {
+                        */
+                        if (xy[0] > treemapWidth + lineChartWidth) {
+                        /*
+                           console.log('d3.mouse(this)', d3.mouse(this));
+                           console.log('this', this, treemapHeight + margin.top, treemapWidth + lineChartWidth);
+                         */
+
+                        var root = createInitialRoot(nestedData);
+                        updateTreemap(root);
+                        }
+                        })
+
+            function updateTreemap(root) {
+                var node = treemapDiv.datum(root).selectAll(".treemapNode")
+                    .data(treemap.nodes)
+                    .call(position)
+                    .each(function(d) { 
+                            if (typeof d.struct != 'undefined') {
+                                var cont = containers[divName(d)];
+                                cont.setSize();
+
+                                cont.setOutlineColor(color(d.name));
+                            }
+                    });
+            }
 
             function mousemove() {
                 var y0 = lineY.invert(d3.mouse(this)[1]);
@@ -224,17 +263,8 @@ function drawCotranscriptionalLine() {
 
                 var root = {"name": "graph",
                     "children": values };
-                var rawValues = values.map(function(d) { return d.size; });
 
-                var node = treemapDiv.datum(root).selectAll(".treemapNode")
-                    .data(treemap.nodes)
-                    .call(position)
-                    .each(function(d) { 
-                            if (typeof d.struct != 'undefined') {
-                                var cont = containers[divName(d)];
-                                cont.setSize();
-                            }
-                    });
+                updateTreemap(root);
             }
     });
 }
