@@ -64,7 +64,7 @@ var margin = {top: 10, right: 60, bottom: 40, left: 10},
     totalWidth = 800
     totalHeight = 500
 
-    treemapWidth = 500 - margin.left - margin.right,
+    treemapWidth = 600 - margin.left - margin.right,
     treemapHeight = totalHeight - margin.top - margin.bottom,
 
     lineChartWidth = totalWidth - treemapWidth - margin.left - margin.right,
@@ -72,7 +72,7 @@ var margin = {top: 10, right: 60, bottom: 40, left: 10},
 
 
 var lineX = d3.scale.linear().range([0, lineChartWidth]);
-var lineY = d3.scale.linear().range([lineChartHeight, 0]);
+var lineY = d3.scale.linear().range([0, lineChartHeight]);
 
 var xAxis = d3.svg.axis()
     .scale(lineX)
@@ -87,7 +87,7 @@ var color = d3.scale.category20();
 
 var treemap = d3.layout.treemap()
     .size([treemapWidth, treemapHeight])
-    .sticky(true)
+    .sticky(false)
     .value(function(d) { return d.size; });
 
 var wholeDiv = d3.select("body").append("div")
@@ -147,23 +147,44 @@ function divName(d) {
 var bisectTime = d3.bisector(function(d) { return d.time; }).left;
 
 function drawCotranscriptionalLine() {
-    d3.dsv(" ", 'text/plain')("pete.d3js", function(error, data) {
+    d3.dsv(" ", 'text/plain')("pete.nxy", function(error, data) {
+            data.forEach(function(d) {
+                d.time = +d.time;
+                d.conc = +d.conc;
+                    });
 
         color.domain(d3.set(data.map(function(d) { return d.id })).values());
 
         lineX.domain(d3.extent(data, function(d) { return +d.conc; }));
         lineY.domain(d3.extent(data, function(d) { return +d.time; }));
-        console.log('root1', data);
-        console.log("lineX.domain()", lineX.domain());
-        console.log("lineY.domain()", lineY.domain());
         
         var nestedData = d3.nest().key(function(d) { return +d.id; }).entries(data)
-        console.log('nestedData', nestedData);
 
         var concProfile = svg.selectAll(".concProfile")
         .data(nestedData)
         .enter().append("g")
         .attr("class", "concProfile");
+
+      var root = {"name": "graph",
+          "children": nestedData.map(function(d) { return {"name": d.key, "struct": 
+                    d.values[0].struct, "size": d.values[0].conc};})};
+
+      var containers = {};
+
+      var node = treemapDiv.datum(root).selectAll(".treemapNode")
+          .data(treemap.nodes)
+        .enter().append("div")
+          .attr("class", "treemapNode")
+          .attr("id", divName)
+          .call(position)
+          //.style("background", function(d) { return d.children ? color(d.name) : null; })
+          //.text(function(d) { return d.children ? null : d.name; })
+          .each(function(d) { 
+                  if (typeof d.struct != 'undefined') {
+                  containers[divName(d)] = new FornaContainer("#" + divName(d), options);
+                  containers[divName(d)].transitionRNA(d.struct);
+                  }
+                  } );
 
         concProfile.append("path")
         .attr("class", "line")
@@ -181,47 +202,47 @@ function drawCotranscriptionalLine() {
             .on("mousemove", mousemove);
 
             function mousemove() {
-                console.log('mouse:', d3.mouse(this)[1]);
-
                 var y0 = lineY.invert(d3.mouse(this)[1]);
-                console.log('y0', y0);
                 i = bisectTime(data, y0, 1);
+                var values = nestedData.map(function(data) { 
+                        var i = bisectTime(data.values, y0, 0)
 
-                d0 = data[i - 1],
-                d1 = data[i],
-                console.log('i', i, 'data[i]', d0, d1);
-                /*
-                d = x0 - d0.date > d1.date - x0 ? d1 : d0;
-                */
-                //focus.attr("transform", "translate(" + x(d.date) + "," + y(d.close) + ")");
-                //focus.select("text").text(formatCurrency(d.close));
+                        if (i >= data.values.length || i == 0)
+                            return {"name": data.key, "struct": data.values[0].struct, "size": 0};
+
+                        var d0 = data.values[i-1];
+                        var d1 = data.values[i];
+
+                        var sc = d3.scale.linear()
+                        .domain([data.values[i-1].time, data.values[i].time])
+                        .range([data.values[i-1].conc, data.values[i].conc])
+
+                        var value = sc(y0);
+
+                        return {"name": data.key, "struct": data.values[0].struct, "size": +value};
+                        });
+
+                var root = {"name": "graph",
+                    "children": values };
+                var rawValues = values.map(function(d) { return d.size; });
+
+                var node = treemapDiv.datum(root).selectAll(".treemapNode")
+                    .data(treemap.nodes)
+                    .call(position)
+                    .each(function(d) { 
+                            if (typeof d.struct != 'undefined') {
+                                var cont = containers[divName(d)];
+                                cont.setSize();
+                            }
+                    });
             }
     });
 }
 
 drawCotranscriptionalLine();
 
-d3.json("flare.json", function(error, root) {
-    console.log('root:', root);
-  var node = treemapDiv.datum(root).selectAll(".treemapNode")
-      .data(treemap.nodes)
-    .enter().append("div")
-      .attr("class", "treemapNode")
-      .attr("id", divName)
-      .call(position)
-      //.style("background", function(d) { return d.children ? color(d.name) : null; })
-      //.text(function(d) { return d.children ? null : d.name; })
-      .each(function(d) { 
-              d.container = new FornaContainer("#" + divName(d), options);
-              if (typeof d.struct != 'undefined') {
-              console.log('d', d, 'd.struct:', d.struct);
-              d.container.transitionRNA(d.struct);
-              }
-              } );
-});
-
 function position() {
-  this.style("left", function(d) { return d.x + "px"; })
+  this.style("left", function(d) {  return d.x + "px"; })
       .style("top", function(d) { return d.y + "px"; })
       .style("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
       .style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; });

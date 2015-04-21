@@ -397,7 +397,7 @@ function FornaContainer(element, passedOptions) {
         self.update();
     };
 
-    function setSize() {
+    self.setSize = function() {
         var svgW = $(element).width();
         var svgH = $(element).height();
 
@@ -539,7 +539,7 @@ function FornaContainer(element, passedOptions) {
         //update()
     }
     //adapt size to window changes:
-    window.addEventListener("resize", setSize, false);
+    window.addEventListener("resize", self.setSize, false);
 
     self.zoomer = d3.behavior.zoom()
         .scaleExtent([0.1,10])
@@ -1371,5 +1371,5 @@ function FornaContainer(element, passedOptions) {
         self.updateStyle();
     };
     
-    setSize();
+    self.setSize();
 }
