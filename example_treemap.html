@@ -144,6 +144,8 @@ function divName(d) {
     return "div" + d.name;
 }
 
+var bisectTime = d3.bisector(function(d) { return d.time; }).left;
+
 function drawCotranscriptionalLine() {
     d3.dsv(" ", 'text/plain')("pete.d3js", function(error, data) {
 
@@ -179,13 +181,16 @@ function drawCotranscriptionalLine() {
             .on("mousemove", mousemove);
 
             function mousemove() {
+                console.log('mouse:', d3.mouse(this)[1]);
+
                 var y0 = lineY.invert(d3.mouse(this)[1]);
                 console.log('y0', y0);
-                i = bise
-                /*
-                i = bisectDate(data, x0, 1),
+                i = bisectTime(data, y0, 1);
+
                 d0 = data[i - 1],
                 d1 = data[i],
+                console.log('i', i, 'data[i]', d0, d1);
+                /*
                 d = x0 - d0.date > d1.date - x0 ? d1 : d0;
                 */
                 //focus.attr("transform", "translate(" + x(d.date) + "," + y(d.close) + ")");
