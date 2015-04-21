@@ -15,7 +15,7 @@ function FornaContainer(element, passedOptions) {
         "applyForce": true,
         "initialSize": [200,200],
         "allowPanningAndZooming": true,
-        "transitionDuration": 500
+        "transitionDuration": 500,
     };
 
     if (arguments.length > 1) {
@@ -588,10 +588,10 @@ function FornaContainer(element, passedOptions) {
     var brush = svg_graph.append('g')
     .datum(function() { return {selected: false, previouslySelected: false}; })
     .attr("class", "brush");
+
     var vis = svg_graph.append("svg:g");
     var vis_links = vis.append("svg:g");
     var vis_nodes = vis.append("svg:g");
-
 
     self.brusher = d3.svg.brush()
                 .x(xScale)
@@ -617,9 +617,9 @@ function FornaContainer(element, passedOptions) {
 
       brush.call(self.brusher)
           .on("mousedown.brush", null)
-          .on("touchstart.brush", null)                                                                      
-          .on("touchmove.brush", null)                                                                       
-          .on("touchend.brush", null);                                                                       
+          .on("touchstart.brush", null) 
+          .on("touchmove.brush", null)
+          .on("touchend.brush", null);
       brush.select('.background').style('cursor', 'auto');
 
     function zoomstart() {

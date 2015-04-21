@@ -2,6 +2,11 @@
 <meta charset="utf-8">
 <style>
 
+    .overlay {
+        fill: none;
+        pointer-events: all;
+    }
+
 body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   margin: auto;
@@ -15,13 +20,30 @@ form {
   top: 10px;
 }
 
-.node {
+.treemapNode {
   border: solid 1px white;
   font: 10px sans-serif;
   line-height: 12px;
   overflow: hidden;
   position: absolute;
   text-indent: 2px;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 2px;
 }
 
 </style>
@@ -38,37 +60,151 @@ var options = {'applyForce': false,
         "initialSize": [800,800],
         "transitionDuration": 1000 }
 
-var margin = {top: 40, right: 10, bottom: 10, left: 10},
-    width = 500 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+var margin = {top: 10, right: 60, bottom: 40, left: 10},
+    totalWidth = 800
+    totalHeight = 500
 
-var color = d3.scale.category20c();
+    treemapWidth = 500 - margin.left - margin.right,
+    treemapHeight = totalHeight - margin.top - margin.bottom,
+
+    lineChartWidth = totalWidth - treemapWidth - margin.left - margin.right,
+    lineChartHeight = totalHeight - margin.top - margin.bottom;
+
+
+var lineX = d3.scale.linear().range([0, lineChartWidth]);
+var lineY = d3.scale.linear().range([lineChartHeight, 0]);
+
+var xAxis = d3.svg.axis()
+    .scale(lineX)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(lineY)
+    .orient("right");
+
+
+var color = d3.scale.category20();
 
 var treemap = d3.layout.treemap()
-    .size([width, height])
+    .size([treemapWidth, treemapHeight])
     .sticky(true)
     .value(function(d) { return d.size; });
 
-var div = d3.select("body").append("div")
+var wholeDiv = d3.select("body").append("div")
     .style("position", "relative")
-    .style("width", (width + margin.left + margin.right) + "px")
-    .style("height", (height + margin.top + margin.bottom) + "px")
+    .style("width", (treemapWidth + lineChartWidth + margin.left + margin.right) + "px")
+    .style("height", (treemapHeight + margin.top + margin.bottom) + "px")
     .style("left", margin.left + "px")
     .style("top", margin.top + "px");
+
+var treemapDiv = wholeDiv.append("div")
+    .style("position", "absolute")
+    .style("width", (treemapWidth) + "px")
+    .style("height", (treemapHeight + margin.bottom) + "px")
+    .style("left", 0 + "px")
+    .style("top", margin.top + "px");
+
+var lineChartDiv = wholeDiv.append("div")
+    .style("position", "absolute")
+    .style("width", (lineChartWidth + margin.right) + "px")
+    .style("height", (lineChartHeight + margin.bottom + margin.top) + "px")
+    .style("left", treemapWidth + "px")
+    .style("top", 0 + "px");
+
+var svg = lineChartDiv.append("svg")
+.attr("width", lineChartWidth)
+.attr("height", lineChartHeight)
+.append("g")
+.attr('transform', "translate(0," + margin.top + ")");
+
+var line = d3.svg.line()
+    .interpolate("basis")
+    .x(function(d) { return lineX(+d.conc); })
+    .y(function(d) { return lineY(+d.time); });
+
+    svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + lineChartHeight + ")")
+    .call(xAxis);
+
+    svg.append("g")
+    .attr("class", "y axis")
+    .attr("transform", "translate(" + (lineChartWidth) + ",0)")
+    .call(yAxis)
+    .append("text")
+    .attr("transform", "rotate(-90)")
+    .attr('x', -10)
+    .attr("y", 35)
+    .attr("dy", ".71em")
+    .style("text-anchor", "end")
+    .text("Time (Arbitrary Units)");
+
 
 function divName(d) {
     return "div" + d.name;
 }
 
+function drawCotranscriptionalLine() {
+    d3.dsv(" ", 'text/plain')("pete.d3js", function(error, data) {
+
+        color.domain(d3.set(data.map(function(d) { return d.id })).values());
+
+        lineX.domain(d3.extent(data, function(d) { return +d.conc; }));
+        lineY.domain(d3.extent(data, function(d) { return +d.time; }));
+        console.log('root1', data);
+        console.log("lineX.domain()", lineX.domain());
+        console.log("lineY.domain()", lineY.domain());
+        
+        var nestedData = d3.nest().key(function(d) { return +d.id; }).entries(data)
+        console.log('nestedData', nestedData);
+
+        var concProfile = svg.selectAll(".concProfile")
+        .data(nestedData)
+        .enter().append("g")
+        .attr("class", "concProfile");
+
+        concProfile.append("path")
+        .attr("class", "line")
+        .attr("d", function(d) { return line(d.values); })
+        .style("stroke", function(d) { 
+            return color(d.key); 
+            });
+
+            svg.append("rect")
+            .attr("class", "overlay")
+            .attr("width", lineChartWidth)
+            .attr("height", lineChartHeight)
+            .on("mouseover", function() { })
+            .on("mouseout", function() { })
+            .on("mousemove", mousemove);
+
+            function mousemove() {
+                var y0 = lineY.invert(d3.mouse(this)[1]);
+                console.log('y0', y0);
+                i = bise
+                /*
+                i = bisectDate(data, x0, 1),
+                d0 = data[i - 1],
+                d1 = data[i],
+                d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+                */
+                //focus.attr("transform", "translate(" + x(d.date) + "," + y(d.close) + ")");
+                //focus.select("text").text(formatCurrency(d.close));
+            }
+    });
+}
+
+drawCotranscriptionalLine();
+
 d3.json("flare.json", function(error, root) {
     console.log('root:', root);
-  var node = div.datum(root).selectAll(".node")
+  var node = treemapDiv.datum(root).selectAll(".treemapNode")
       .data(treemap.nodes)
     .enter().append("div")
-      .attr("class", "node")
+      .attr("class", "treemapNode")
       .attr("id", divName)
       .call(position)
-      .style("background", function(d) { return d.children ? color(d.name) : null; })
+      //.style("background", function(d) { return d.children ? color(d.name) : null; })
       //.text(function(d) { return d.children ? null : d.name; })
       .each(function(d) { 
               d.container = new FornaContainer("#" + divName(d), options);
