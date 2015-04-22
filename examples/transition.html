@@ -1,44 +1,48 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<link rel='stylesheet' type='text/css' href='css/fornac.css' />
+<link rel='stylesheet' type='text/css' href='../css/fornac.css' />
 This is an RNA container.
 
-<div id='rna_ss'> </div>
+<div id='rna_ss' style="width: 300px; height: 300px; margin:0 auto;"></div> 
 
 This after the RNA container.
 
-    <script type='text/javascript' src='js/jquery.js'></script> 
-    <script type='text/javascript' src='js/d3.js'></script>                                                                
-    <script type='text/javascript' src='js/fornac.js'></script>                                                            
-    <script type='text/javascript' src='src/fornaf.js'></script>                                                            
+    <script type='text/javascript' src='../js/jquery.js'></script> 
+    <script type='text/javascript' src='../js/d3.js'></script>                                                                
+    <script type='text/javascript' src='../js/fornac.js'></script>                                                            
+    <script type='text/javascript' src='../src/fornaf.js'></script>                                                            
 
     <script type='text/javascript'>                                                                                         
-var container = new FornaContainer("#rna_ss", {'applyForce': false, 
-        'allowPanningAndZooming': true,
-        "labelInterval":0,
-        "initialSize": [800,800],
-        "transitionDuration": 1000 }); 
+
 
 
 //var structs = ['(.).', '(.)..', '(.)...', '(.)....', '(.).....', '(.).(..)'] //, '(.)...']
 
-function doAnimation(structs) {
-    var funcs = []
+    function doAnimation(elementName, structs) {
+        var container = new FornaContainer(elementName, {'applyForce': false, 
+                'allowPanningAndZooming': true,
+                "labelInterval":0,
+                "initialSize": [800,800],
+                "transitionDuration": 1000 }); 
 
-        for (i = 0; i < structs.length; i++) {
-            if (funcs.length === 0) 
-                (function(val) { funcs.push(function() { console.log('here', val, structs[val]); container.transitionRNA(structs[val]) })} )(i);
-            else
-                (function(val, prevFunc) { funcs.push(function() { console.log('here', val, structs[val]); container.transitionRNA(structs[val], prevFunc) })} )(i, funcs[funcs.length-1] );
-        }
+        var funcs = []
 
-    console.log('funcs', funcs);
+            for (i = 0; i < structs.length; i++) {
+                if (funcs.length === 0) 
+                    (function(val) { funcs.push(function() { console.log('here', val, structs[val]); container.transitionRNA(structs[val]); container.setOutlineColor('white');
+                                                })} )(i);
+                else
+                    (function(val, prevFunc) { funcs.push(function() { console.log('here', val, structs[val]); container.transitionRNA(structs[val], prevFunc); container.setOutlineColor('white');
+                                                          })} )(i, funcs[funcs.length-1] );
+            }
 
-    funcs[funcs.length-1]();
-}
+        console.log('funcs', funcs);
+
+        funcs[funcs.length-1]();
+    }
 
 var structs = ['(.).', '(.)..', '(.)...', '(.)....'].reverse();
-doAnimation(structs);
+doAnimation("#rna_ss", structs);
 
 // draw the same RNA twice
 
