@@ -48,10 +48,10 @@ form {
 
 </style>
 <body></body>
-    <script type='text/javascript' src='js/jquery.js'></script> 
-    <script type='text/javascript' src='js/d3.js'></script>                                                                
-    <script type='text/javascript' src='js/fornac.js'></script>                                                            
-    <script type='text/javascript' src='src/fornaf.js'></script> 
+    <script type='text/javascript' src='../js/jquery.js'></script> 
+    <script type='text/javascript' src='../js/d3.js'></script>                                                                
+    <script type='text/javascript' src='../js/fornac.js'></script>                                                            
+    <script type='text/javascript' src='../src/fornaf.js'></script> 
 <script>
 
 var options = {'applyForce': false, 
@@ -147,7 +147,7 @@ function divName(d) {
 var bisectTime = d3.bisector(function(d) { return d.time; }).left;
 
 function drawCotranscriptionalLine() {
-    d3.dsv(" ", 'text/plain')("pete.nxy", function(error, data) {
+    d3.dsv(" ", 'text/plain')("data/pete.nxy", function(error, data) {
             data.forEach(function(d) {
                 d.time = +d.time;
                 d.conc = +d.conc;
