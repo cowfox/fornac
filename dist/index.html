@@ -1,100 +1,113 @@
 <!DOCTYPE html>
 <html lang="">
 <head>
-<meta charset="utf-8">
-<title>Fornac Example</title>
+    <meta charset="utf-8">
+    <title>Fornac Example</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.3.1/css/bulma.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="styles/base.css">
+
 </head>
 <body>
 
-This is an RNA container:
-<div id='rna_ss'> </div>
+<nav class="nav has-shadow">
+    <div class="nav-left">
+        <div class="nav-item">
+            <span class="title">RNA Library Summary (<span id="date"></span>)</span>
+        </div>
+    </div>
+</nav>
 
-This is an RNA container using the NAView layout:
-<div id="naview_ss"></div>
+<section class="section">
+    <div class="columns">
+        <div class="column box is-2 is-offset-5">
+            <div class="control is-horizontal">
+                <!--<div class="control-label">-->
+                    <!--<label class="label">RNA ID:</label>-->
+                <!--</div>-->
+                <div class="control is-grouped">
+                    <p class="control has-addons">
+                      <span class="select is-medium is-expanded">
+                        <select id="rna_select">
+                        </select>
+                      </span>
+                        <a class="button is-primary is-medium" id="view_rna">
+                            View
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-This is an output of an RNA folded using RNAcofold:
-<div id='cofold_ss'></div>
+    <div class="container is-fluid">
+        <div class="columns">
+            <div class="column is-12">
+                <div class="content">
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th>ID</th>
+                                <td id="rna_id"></td>
+                            </tr>
+                            <tr>
+                                <th>Barcode</th>
+                                <td>
+                                    <span class="console" id="rna_barcode"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Sequence</th>
+                                <td>
+                                    <span class="console" id="rna_sequence"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-This is a custom-colored RNA:
-<div id="custom_colors"></div>
+        <div class="columns">
+            <div class="column is-6">
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            Reference Structure
+                        </p>
+                    </header>
+                    <div class="card-image" id="rna_reference">
+                    </div>
+                    <div class="card-content">
+                        <div class="content">
+                            <p class="console" id="reference_structure"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-<script src="scripts/fornac.js"></script>
+            <div class="column is-6">
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            Predicted Structure
+                        </p>
+                    </header>
+                    <div class="card-image center" id="rna_predicted">
+                    </div>
+                    <div class="card-content">
+                        <div class="content">
+                            <p class="console" id="predicted_structure"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-<script type='text/javascript'>
-"use strict"
+<script src="scripts/app.js"></script>
 
-function customColorsContainer() {
-    let container = new fornac.FornaContainer("#custom_colors",
-            {'applyForce': false, 'allowPanningAndZooming': true, 'initialSize':[300,200]});
-
-    let options = {'structure': '..((((....)))).....',
-        'sequence':             'AACGCUUCAUAUAAUCAAA'
-    };
-    container.addRNA(options.structure, options);
-    container.setSize();
-
-    container.addCustomColorsText('1:red         9:#ff7f0e 10:#ff7f0e 11:#ff7f0e 12:#aec7e8');
-}
-
-function normalContainer() {
-    let container = new fornac.FornaContainer("#rna_ss",
-            {'applyForce': false, 'allowPanningAndZooming': true, 'initialSize':[500,300]});
-
-    let options = {'structure': '..((..((...[)).(((..].))).))..',
-        'sequence': 'AACGCUUCAUAUAAUCCUAAUGACCUAUAA'
-    };
-    container.addRNA(options.structure, options);
-    container.setSize();
-}
-
-function naviewContainer() {
-    let container = new fornac.FornaContainer("#naview_ss",
-            {'applyForce': false, 'allowPanningAndZooming': true, 'initialSize':[500,300],
-            'layout': 'naview'});
-
-    let options = {'structure': '..((..((...[)).(((..].))).))..',
-        'sequence': 'AACGCUUCAUAUAAUCCUAAUGACCUAUAA'
-    };
-    container.addRNA(options.structure, options);
-    container.setSize();
-}
-
-
-function cofoldContainer() {
-    var container = new fornac.FornaContainer("#cofold_ss",
-            {'applyForce': false, 'allowPanningAndZooming': true, 'initialSize':[500,300]});
-
-    var options = {'structure': '..((((...))))...((...((...((..&............))...))...))..',
-        'sequence': 'ACGAUCAGAGAUCAGAGCAUACGACAGCAG&ACGAAAAAAAGAGCAUACGACAGCAG'
-    };
-    container.addRNA(options.structure, options);
-    container.setSize();
-}
-
-normalContainer();
-naviewContainer();
-cofoldContainer();
-customColorsContainer();
-
-
-/*
-var options1 = {'structure': '.((((....)))).',
-    'sequence': 'GCGACGAUUGUCGG'
-};
-
-var options1 = {'sequence': 'UACACUGCCCAGGUAGUGCUUACACUGCAACUGUAGUGGG',
-    'structure': '..((((((....((((((....))))))....))))))..'}
-
-var options1 = {'sequence': 'UACACUGCCCAGGUAGUGCUUACACUGCAACUGUAGUGGG',
-    'structure': '..((((((....))))))....((((((....))))))..'}
-var options1 = {'structure': '..............',
-    'sequence': 'GCGGCGAUUGCCGG'
-};
-*/
-
-//container.changeColorScheme('custom')
-//container.transitionRNA(options1.structure);
-
-</script>
 </body>
 </html>

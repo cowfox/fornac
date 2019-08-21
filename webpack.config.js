@@ -4,7 +4,7 @@ console.log('process.env.NODE_PATH:', process.env.NODE_PATH);
 
 module.exports = {
   context: __dirname + '/app',
-  entry: {fornac: './scripts/fornac.js',
+  entry: {app: './scripts/app.js',
       rnaplot: ['./scripts/rnaplot.js'],
       rnatreemap: './scripts/rnatreemap.js'},
   output: {

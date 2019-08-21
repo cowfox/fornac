@@ -92,8 +92,8 @@ gulp.task('fonts', () => {
 
 gulp.task('extras', () => {
   return gulp.src([
-    'app/*.*',
-    '!app/*.html'
+    'app/**/*',
+    '!app/**/*.html'
   ], {
     dot: true
   }).pipe(gulp.dest('dist'));
@@ -117,7 +117,8 @@ gulp.task('serve', ['styles', 'scripts', 'fonts'], () => {
     'app/*.html',
     '.tmp/scripts/**/*.js',
     'app/images/**/*',
-    '.tmp/fonts/**/*'
+    '.tmp/fonts/**/*',
+      '.tmp/styles/**/*'
   ]).on('change', reload);
 
   gulp.watch('app/styles/**/*.css', ['styles']);
@@ -125,8 +126,8 @@ gulp.task('serve', ['styles', 'scripts', 'fonts'], () => {
   gulp.watch('app/fonts/**/*', ['fonts']);
   gulp.watch('bower.json', ['wiredep', 'fonts']);
 
-  gulp.watch('app/scripts/**/*.js', ['test']);
-  gulp.watch('test/**/*.js', ['test']);
+  // gulp.watch('app/scripts/**/*.js', ['test']);
+  // gulp.watch('test/**/*.js', ['test']);
 });
 
 gulp.task('serve:dist', () => {
